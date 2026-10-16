@@ -1,0 +1,64 @@
+Build a responsive web application called "UniOne", a centralized university admission portal for students in Pakistan. Students fill their details once and apply to multiple universities from one place, then pay all application fees in a single checkout.
+
+TECH STACK
+- Frontend: React + Tailwind CSS (mobile-first, clean, modern, trustworthy design)
+- Backend: Node.js + Express (or Next.js API routes)
+- Database: PostgreSQL
+- File storage: S3-compatible storage for documents
+- Auth: JWT with email/password, phone OTP, and Google login
+- Payments: mock gateway layer designed so JazzCash, Easypaisa, Stripe, and bank transfer can be plugged in later
+
+THREE USER ROLES
+1. Student
+2. University staff (admissions officer)
+3. UniOne Super Admin
+
+STUDENT FEATURES
+1. Auth: sign up, login, email verification, phone OTP, password reset
+2. Master Profile (filled once, reused everywhere): personal details (name, CNIC/passport, DOB, gender, address, nationality), guardian details, academic history (matric/O-levels, intermediate/A-levels, bachelor's) with marks and board, test scores (ECAT, MDCAT, NTS, SAT, GRE, IELTS), achievements and extracurriculars. Show a profile completion percentage bar and auto-save drafts.
+3. Document Vault: upload once, reuse for all applications (CNIC, photo, transcripts, certificates, recommendation letters, personal statement). Validate file type and size (PDF/JPG/PNG, max 5MB). Show status: pending, verified, rejected with reason.
+4. University and Program Discovery: searchable directory with filters (city, degree level, field, fee range, deadline, scholarships). University detail pages with about, programs, fees, requirements, deadlines, and contact info. Shortlist/wishlist and a side-by-side compare feature.
+5. Multi-University Application: select multiple programs, apply in one flow. Auto-fill each application from the master profile. Support extra custom fields per university (essay, SOP, special questions). Allow program preference order, a per-application document checklist, a review page before submission, and save-and-resume.
+6. Combined Payment Checkout: cart with the application fee of each selected university, service fee, and total. Single checkout using a payment abstraction layer (mock for now). Generate PDF receipts, keep payment history, and handle failed payment retry and discount codes.
+7. Application Tracking Dashboard: statuses are Draft, Submitted, Under Review, Interview, Offer, Waitlisted, Rejected. Show a timeline per application and a deadline calendar.
+8. Notifications: in-app notification center plus email/SMS hooks for deadlines, payment confirmations, and status changes.
+
+UNIVERSITY PORTAL
+- Staff login with roles and permissions
+- Create and manage programs: seats, fees, deadlines, requirements
+- Form builder to define custom application fields per program
+- View, search, and filter applications; open the applicant's full profile and documents
+- Verify or reject documents with comments; request missing documents
+- Update application status individually or in bulk; issue offers
+- Analytics dashboard: applications received, by program, by city, conversion
+- Export applications to CSV/Excel
+
+SUPER ADMIN PANEL
+- Onboard, verify, approve, or suspend universities
+- Manage users and view all applications
+- Payments overview, commission settings, and settlement tracking per university
+- Manage content: FAQs, blogs, banners
+- Detect duplicate accounts
+- Platform-wide analytics and audit logs
+
+PUBLIC PAGES
+Landing page (hero, how it works in 4 steps, benefits, featured universities, testimonials, FAQ, footer), About, Contact, Universities listing, University detail, Privacy Policy, Terms of Use.
+
+SECURITY AND QUALITY
+- HTTPS-ready, password hashing, input validation, rate limiting
+- Role-based access control and encrypted/secure document access (signed URLs)
+- Never store card data
+- Audit logging for sensitive actions
+- Accessible, fast, and fully mobile-responsive
+- English now, structured for Urdu support later
+
+DATABASE
+Design tables for: users, student_profiles, education_records, test_scores, documents, universities, programs, custom_fields, applications, application_answers, application_documents, payments, payment_items, notifications, shortlists, audit_logs.
+
+DESIGN
+Professional, friendly, education-focused. Primary color deep blue with a warm accent. Clean cards, clear progress indicators, and step-by-step wizards. Include loading, empty, and error states everywhere.
+
+DELIVERABLES
+Project structure, database schema/migrations, backend APIs, all frontend pages, seed data (10 sample universities with programs), and setup instructions in a README.
+
+Start by outlining the architecture and folder structure, then build Phase 1.

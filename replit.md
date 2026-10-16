@@ -1,6 +1,6 @@
-# [Project name]
+# UniOne
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A centralized admissions portal for students in Pakistan to maintain a reusable profile, discover university programs, and keep a shortlist in one place.
 
 ## Run & Operate
 
@@ -22,23 +22,36 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/unione/` — React + Vite web application and student-facing UI
+- `artifacts/api-server/src/routes/` — Express API routes
+- `artifacts/api-server/src/seed-unione.ts` — repeatable demo university/program seed
+- `lib/api-spec/openapi.yaml` — source of truth for the API contract
+- `lib/api-client-react/` and `lib/api-zod/` — generated API hooks and validation schemas
+- `lib/db/src/schema/unione.ts` — Drizzle database schema
+- `README.md` — product architecture, Phase 1 scope, and setup steps
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Student profile and shortlist endpoints are scoped by the signed-in Clerk user ID; do not add public access to those records.
+- University discovery is public. Seeded program fees and deadlines are illustrative and must be replaced with verified data before real applications.
+- OpenAPI is the contract source; regenerate client hooks and validators after changing it.
+- Document storage, applications, payments, university staff, and super-admin workflows are later phases.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Phase 1 includes a public landing page and searchable university catalogue, university details, shortlist, authenticated student profile with education/test scores and automatic draft saving, and an overview dashboard.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Professional, friendly, education-focused visual language; deep blue primary with a warm accent.
+- Mobile-first responsive pages and clear progress indicators.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run `pnpm --filter @workspace/api-spec run codegen` after any OpenAPI contract changes.
+- Run `pnpm --filter @workspace/db run push` before seeding a fresh development database.
+- Clerk development and production user stores are separate. Google SSO requires provider setup in the Auth pane; phone OTP is not part of Phase 1.
+- Demo catalogue fees, requirements, and deadlines are not official admissions information.
 
 ## Pointers
 

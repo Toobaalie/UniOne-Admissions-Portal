@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: UniOne admissions discovery and student profile API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: discovery
+    description: Public university and program discovery
+  - name: student
+    description: Authenticated student profile and shortlist
 paths:
   /healthz:
     get:
@@ -24,6 +28,168 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /discovery/highlights:
+    get:
+      operationId: getDiscoveryHighlights
+      tags: [discovery]
+      summary: Get discovery highlights
+      responses:
+        "200":
+          description: Featured universities and catalogue count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryHighlights"
+  /universities:
+    get:
+      operationId: listUniversities
+      tags: [discovery]
+      summary: Search universities and programs
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: degreeLevel
+          in: query
+          schema: { type: string }
+        - name: field
+          in: query
+          schema: { type: string }
+        - name: feeMin
+          in: query
+          schema: { type: integer, minimum: 0 }
+        - name: feeMax
+          in: query
+          schema: { type: integer, minimum: 0 }
+        - name: deadlineBefore
+          in: query
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        - name: scholarshipOnly
+          in: query
+          schema: { type: boolean }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 12 }
+      responses:
+        "200":
+          description: Matching universities and programs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UniversitySearchResponse"
+  /universities/{slug}:
+    get:
+      operationId: getUniversity
+      tags: [discovery]
+      summary: Get a university and its programs
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        "200":
+          description: University details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UniversityDetail"
+        "404":
+          description: University not found
+  /student/profile:
+    get:
+      operationId: getStudentProfile
+      tags: [student]
+      summary: Get the signed-in student's profile
+      responses:
+        "200":
+          description: Student profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentProfile"
+        "401":
+          description: Sign-in required
+    put:
+      operationId: saveStudentProfile
+      tags: [student]
+      summary: Create or update the signed-in student's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentProfileInput"
+      responses:
+        "200":
+          description: Saved student profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentProfile"
+        "401":
+          description: Sign-in required
+  /student/shortlist:
+    get:
+      operationId: listShortlist
+      tags: [student]
+      summary: Get the signed-in student's shortlisted programs
+      responses:
+        "200":
+          description: Shortlisted programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShortlistItem"
+        "401":
+          description: Sign-in required
+  /student/shortlist/{programId}:
+    put:
+      operationId: addProgramToShortlist
+      tags: [student]
+      summary: Add a program to the signed-in student's shortlist
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        "200":
+          description: Shortlist item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShortlistItem"
+        "401":
+          description: Sign-in required
+        "404":
+          description: Program not found
+    delete:
+      operationId: removeProgramFromShortlist
+      tags: [student]
+      summary: Remove a program from the signed-in student's shortlist
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        "204":
+          description: Removed
+        "401":
+          description: Sign-in required
+        "404":
+          description: Program not found
 components:
   schemas:
     HealthStatus:
@@ -31,6 +197,179 @@ components:
       properties:
         status:
           type: string
+      required: [status]
+    University:
+      type: object
       required:
-        - status
-
+        - id
+        - slug
+        - name
+        - shortName
+        - city
+        - description
+        - fields
+        - programCount
+        - scholarshipAvailable
+        - sampleData
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        shortName: { type: string }
+        city: { type: string }
+        description: { type: string }
+        website: { type: ["string", "null"] }
+        fields:
+          type: array
+          items: { type: string }
+        programCount: { type: integer }
+        minAnnualFeePkr: { type: ["integer", "null"] }
+        deadlineDate: { type: ["string", "null"], format: date }
+        scholarshipAvailable: { type: boolean }
+        sampleData: { type: boolean }
+    Program:
+      type: object
+      required:
+        - id
+        - universityId
+        - universitySlug
+        - universityName
+        - name
+        - degreeLevel
+        - field
+        - durationYears
+        - requirements
+        - scholarshipAvailable
+        - sampleData
+      properties:
+        id: { type: integer }
+        universityId: { type: integer }
+        universitySlug: { type: string }
+        universityName: { type: string }
+        name: { type: string }
+        degreeLevel: { type: string }
+        field: { type: string }
+        durationYears: { type: number }
+        annualFeePkr: { type: ["integer", "null"] }
+        applicationDeadline: { type: ["string", "null"], format: date }
+        requirements:
+          type: array
+          items: { type: string }
+        scholarshipAvailable: { type: boolean }
+        sampleData: { type: boolean }
+    UniversityDetail:
+      allOf:
+        - $ref: "#/components/schemas/University"
+        - type: object
+          required: [about, programs]
+          properties:
+            about: { type: string }
+            programs:
+              type: array
+              items:
+                $ref: "#/components/schemas/Program"
+    UniversitySearchResponse:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/University"
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    DiscoveryHighlights:
+      type: object
+      required: [featuredUniversities, totalUniversities, sampleData]
+      properties:
+        featuredUniversities:
+          type: array
+          items:
+            $ref: "#/components/schemas/University"
+        totalUniversities: { type: integer }
+        sampleData: { type: boolean }
+    EducationRecord:
+      type: object
+      required: [level, qualification]
+      properties:
+        level: { type: string }
+        qualification: { type: string }
+        institution: { type: ["string", "null"] }
+        board: { type: ["string", "null"] }
+        completionYear: { type: ["integer", "null"] }
+        marksObtained: { type: ["number", "null"] }
+        marksTotal: { type: ["number", "null"] }
+    TestScore:
+      type: object
+      required: [testName]
+      properties:
+        testName: { type: string }
+        score: { type: ["string", "null"] }
+        testDate: { type: ["string", "null"], format: date }
+    StudentProfile:
+      type: object
+      required:
+        - legalName
+        - nationality
+        - education
+        - testScores
+        - completionPercent
+        - updatedAt
+      properties:
+        legalName: { type: string }
+        dateOfBirth: { type: ["string", "null"], format: date }
+        gender: { type: ["string", "null"] }
+        nationality: { type: string }
+        phone: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        province: { type: ["string", "null"] }
+        guardianName: { type: ["string", "null"] }
+        guardianPhone: { type: ["string", "null"] }
+        education:
+          type: array
+          items:
+            $ref: "#/components/schemas/EducationRecord"
+        testScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestScore"
+        completionPercent: { type: integer, minimum: 0, maximum: 100 }
+        updatedAt: { type: string, format: date-time }
+    StudentProfileInput:
+      type: object
+      required: [legalName, nationality, education, testScores]
+      properties:
+        legalName: { type: string, minLength: 1, maxLength: 160 }
+        dateOfBirth: { type: ["string", "null"], format: date }
+        gender: { type: ["string", "null"] }
+        nationality: { type: string, minLength: 1, maxLength: 80 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        city: { type: ["string", "null"], maxLength: 100 }
+        province: { type: ["string", "null"], maxLength: 100 }
+        guardianName: { type: ["string", "null"], maxLength: 160 }
+        guardianPhone: { type: ["string", "null"], maxLength: 40 }
+        education:
+          type: array
+          items:
+            $ref: "#/components/schemas/EducationRecord"
+        testScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestScore"
+    ShortlistItem:
+      type: object
+      required: [programId, programName, universitySlug, universityName, city, degreeLevel, field, scholarshipAvailable, sampleData, savedAt]
+      properties:
+        programId: { type: integer }
+        programName: { type: string }
+        universitySlug: { type: string }
+        universityName: { type: string }
+        city: { type: string }
+        degreeLevel: { type: string }
+        field: { type: string }
+        annualFeePkr: { type: ["integer", "null"] }
+        applicationDeadline: { type: ["string", "null"], format: date }
+        scholarshipAvailable: { type: boolean }
+        sampleData: { type: boolean }
+        savedAt: { type: string, format: date-time }
